@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CrystaloLab 3D - Mobile Engineering</title>
+    <title>CrystaloLab 3D - UTN FRSN</title>
     <style>
-        :root { --accent: #00ffcc; --bg: #050508; --panel: rgba(10, 10, 15, 0.9); }
+        :root { --accent: #00ffcc; --bg: #050508; --panel: rgba(10, 10, 15, 0.9); --cut: #ff3e3e; }
         body { margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; background: var(--bg); color: #e0e0e0; font-size: 11px; }
         
-        #header { position: absolute; top: 0; width: 100%; text-align: center; padding: 10px 0; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); z-index: 5; }
-        h1 { margin: 0; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); font-size: 1.1rem; }
+        #header { position: absolute; top: 0; width: 100%; text-align: center; padding: 15px 0; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); z-index: 5; }
+        h1 { margin: 0; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); font-size: 1.2rem; }
+        .author { font-size: 0.65rem; letter-spacing: 1px; color: #aaa; text-transform: uppercase; margin-top: 4px; }
 
-        /* Panel adaptado a móviles (inferior) */
         #ui { 
             position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; 
             background: var(--panel); padding: 15px; border-top: 2px solid var(--accent); 
@@ -30,9 +30,10 @@
             padding: 8px; border-radius: 4px; font-size: 0.9rem; outline: none; box-sizing: border-box; 
         }
 
+        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-toggle { 
-            width: 100%; padding: 10px; border: 1px solid var(--accent); background: transparent; 
-            color: var(--accent); cursor: pointer; font-size: 0.7rem; letter-spacing: 1px; 
+            padding: 10px; border: 1px solid var(--accent); background: transparent; 
+            color: var(--accent); cursor: pointer; font-size: 0.6rem; letter-spacing: 1px; 
             transition: 0.3s; text-transform: uppercase; border-radius: 4px;
         }
         .btn-active { background: var(--accent) !important; color: #000 !important; font-weight: bold; }
@@ -41,7 +42,7 @@
         .val { color: var(--accent); }
 
         @media (min-width: 768px) {
-            #ui { width: 320px; top: 60px; bottom: 20px; left: 20px; right: auto; max-height: none; border-top: none; border-left: 3px solid var(--accent); border-radius: 4px; }
+            #ui { width: 320px; top: 75px; bottom: 20px; left: 20px; right: auto; max-height: none; border-top: none; border-left: 3px solid var(--accent); border-radius: 4px; }
             .full-width, .group { grid-column: span 2; }
         }
     </style>
@@ -50,6 +51,7 @@
 
 <div id="header">
     <h1>CrystaloLab <span style="font-weight: 100; color: #fff;">3D</span></h1>
+    <div class="author">Departamento de modelización - UTN FRSN</div>
 </div>
 
 <div id="ui">
@@ -71,19 +73,19 @@
 
     <div class="group">
         <label>Celda a=b=c (Å)</label>
-        <div id="read-a" class="read-only">2.86</div>
+        <div id="read-a" class="read-only">-</div>
     </div>
     <div class="group">
         <label>Radio Atómico (Å)</label>
-        <div id="read-r" class="read-only">1.24</div>
+        <div id="read-r" class="read-only">-</div>
     </div>
 
     <div class="group full-width">
         <label>Repetición (Nx, Ny, Nz)</label>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
-            <input type="number" id="nx" value="2" min="1" max="10">
-            <input type="number" id="ny" value="2" min="1" max="10">
-            <input type="number" id="nz" value="2" min="1" max="10">
+            <input type="number" id="nx" value="3" min="1" max="10">
+            <input type="number" id="ny" value="3" min="1" max="10">
+            <input type="number" id="nz" value="3" min="1" max="10">
         </div>
     </div>
 
@@ -94,9 +96,14 @@
             <input type="number" id="mk" value="1">
             <input type="number" id="ml" value="1">
         </div>
-        <button id="toggle-plane" class="btn-toggle btn-active">CORTE: ACTIVADO</button>
-        <label style="margin-top:10px;">Desplazamiento del Plano</label>
-        <input type="range" id="plane-pos" min="-1" max="10" step="0.1" value="0">
+        
+        <div class="grid-buttons">
+            <button id="toggle-cut" class="btn-toggle btn-active">FÍSICA CORTE</button>
+            <button id="toggle-plane" class="btn-toggle btn-active">VER PLANO</button>
+        </div>
+
+        <label style="margin-top:10px;">Desplazamiento</label>
+        <input type="range" id="plane-pos" min="-1" max="10" step="0.1" value="0.5">
     </div>
 
     <div class="stats">
@@ -118,7 +125,6 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    // Base de datos de metales ampliada
     const metales = {
         fe: { n: "Hierro", a: 2.866, b: "I", r: 1.24, col: 0x999999 },
         al: { n: "Aluminio", a: 4.049, b: "F", r: 1.43, col: 0xe0e0e0 },
@@ -133,7 +139,8 @@
     };
 
     let scene, camera, renderer, controls, mainGroup, planeVisual, clipPlane;
-    let isPlaneActive = true;
+    let isPlaneVisible = true;
+    let isCuttingActive = true;
     let currentMetal = metales.fe;
 
     init();
@@ -142,21 +149,19 @@
     function init() {
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(15, 12, 20);
+        camera.position.set(18, 15, 25);
 
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.localClippingEnabled = true;
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setClearColor(0x050508);
         document.body.appendChild(renderer.domElement);
 
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
 
-        const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambient);
-        
+        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
         const sun = new THREE.DirectionalLight(0xffffff, 2);
         sun.position.set(10, 20, 10);
         scene.add(sun);
@@ -166,10 +171,16 @@
 
         clipPlane = new THREE.Plane(new THREE.Vector3(1, 1, 1).normalize(), 0);
 
-        // Listeners de UI
         document.getElementById('preset-metal').addEventListener('change', updateMetalData);
+        
+        document.getElementById('toggle-cut').addEventListener('click', function() {
+            isCuttingActive = !isCuttingActive;
+            this.classList.toggle('btn-active');
+            build();
+        });
+
         document.getElementById('toggle-plane').addEventListener('click', function() {
-            isPlaneActive = !isPlaneActive;
+            isPlaneVisible = !isPlaneVisible;
             this.classList.toggle('btn-active');
             build();
         });
@@ -200,22 +211,20 @@
         const l = parseFloat(document.getElementById('ml').value) || 0;
         const pos = parseFloat(document.getElementById('plane-pos').value) || 0;
 
-        // Matriz identidad para cúbicos simples
-        const matrix = new THREE.Matrix4().makeScale(a, a, a);
         document.getElementById('stat-vol').textContent = Math.pow(a, 3).toFixed(2);
 
         let motif = [[0,0,0]];
         if(currentMetal.b === 'I') motif.push([0.5, 0.5, 0.5]);
         if(currentMetal.b === 'F') motif.push([0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]);
 
-        if(isPlaneActive) {
-            const normal = new THREE.Vector3(h, k, l).normalize().multiplyScalar(-1);
-            if(normal.length() === 0) normal.set(0, -1, 0);
-            clipPlane.set(normal, pos * a); 
-            
+        const normal = new THREE.Vector3(h, k, l).normalize().multiplyScalar(-1);
+        if(normal.length() === 0) normal.set(0, -1, 0);
+        clipPlane.set(normal, pos * a);
+
+        if(isPlaneVisible) {
             planeVisual = new THREE.Mesh(
-                new THREE.PlaneGeometry(100, 100), 
-                new THREE.MeshBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.15, side: THREE.DoubleSide })
+                new THREE.PlaneGeometry(150, 150), 
+                new THREE.MeshBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.1, side: THREE.DoubleSide })
             );
             planeVisual.position.copy(normal).multiplyScalar(-pos * a);
             planeVisual.lookAt(new THREE.Vector3().addVectors(planeVisual.position, normal));
@@ -223,19 +232,21 @@
         }
 
         const sphereGeo = new THREE.SphereGeometry(currentMetal.r, 24, 24);
+        
         const matOuter = new THREE.MeshStandardMaterial({ 
-            color: currentMetal.col, metalness: 0.7, roughness: 0.2, transparent: true, opacity: 1,
-            clippingPlanes: isPlaneActive ? [clipPlane] : [], side: THREE.FrontSide
+            color: currentMetal.col, metalness: 0.7, roughness: 0.2, 
+            clippingPlanes: isCuttingActive ? [clipPlane] : [], side: THREE.FrontSide
         });
+
         const matInner = new THREE.MeshBasicMaterial({ 
-            color: 0x111111, clippingPlanes: isPlaneActive ? [clipPlane] : [], side: THREE.BackSide 
+            color: 0xff3e3e,
+            clippingPlanes: isCuttingActive ? [clipPlane] : [], side: THREE.BackSide 
         });
 
         let count = 0;
         for(let x=0; x<nx; x++) {
             for(let y=0; y<ny; y++) {
                 for(let z=0; z<nz; z++) {
-                    // Dibujar aristas de celda
                     const points = [
                         new THREE.Vector3(x*a, y*a, z*a), new THREE.Vector3((x+1)*a, y*a, z*a),
                         new THREE.Vector3((x+1)*a, (y+1)*a, z*a), new THREE.Vector3(x*a, (y+1)*a, z*a),
@@ -244,7 +255,7 @@
                     ];
                     const indices = [0,1, 1,2, 2,3, 3,0, 4,5, 5,6, 6,7, 7,4, 0,4, 1,5, 2,6, 3,7];
                     const lineGeom = new THREE.BufferGeometry().setFromPoints(indices.map(i => points[i]));
-                    mainGroup.add(new THREE.LineSegments(lineGeom, new THREE.LineBasicMaterial({color: 0x444444, clippingPlanes: isPlaneActive ? [clipPlane] : []})));
+                    mainGroup.add(new THREE.LineSegments(lineGeom, new THREE.LineBasicMaterial({color: 0x333333, clippingPlanes: isCuttingActive ? [clipPlane] : []})));
 
                     motif.forEach(m => {
                         const p = new THREE.Vector3((m[0]+x)*a, (m[1]+y)*a, (m[2]+z)*a);
