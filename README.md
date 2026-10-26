@@ -50,3 +50,7 @@ Sobre la barra de esfuerzo hay un panel **CÁMARA** con vista previa en vivo, y 
 - **Encuadre "cristal"**: encuadra todo el cristal desde tu lado, con suavizado para que no tiemble con la cabeza. **"Mi vista"**: sale desde tu mirada.
 - Foto en PNG de 1920×1080; video en WebM de 1280×720 a 24 cuadros por segundo, con el sonido de la app (máximo 5 minutos).
 - Con *Guardar al capturar* activo, cada captura se descarga sola. Además quedan en una galería (se ve en la PC o al salir de VR) con el botón *Descargar*.
+
+## Sitio informativo
+
+Catálogo de defectos cristalinos con capturas y esquemas: [`/sitio/`](https://guileman.github.io/Cristalab_2/sitio/).
