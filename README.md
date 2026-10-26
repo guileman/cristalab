@@ -53,4 +53,4 @@ Sobre la barra de esfuerzo hay un panel **CÁMARA** con vista previa en vivo, y 
 
 ## Sitio informativo
 
-Catálogo de defectos cristalinos con capturas y esquemas: [`/sitio/`](https://guileman.github.io/Cristalab_2/sitio/).
+Catálogo de defectos cristalinos con capturas y esquemas: [`/sitio/`](https://guileman.github.io/cristalab/sitio/).
